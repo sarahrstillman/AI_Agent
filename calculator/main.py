@@ -11,12 +11,18 @@ if len(sys.argv) < 2:
 
 user_prompt = sys.argv[1]
 
+verbose = False 
+if "--verbose" in sys.argv:
+    verbose = True
+
 messages = [
     types.Content(role="user", parts=[types.Part(text=user_prompt)])
 ]
 
 load_dotenv()
+
 api_key = os.environ.get("GEMINI_API_KEY")
+
 client = genai.Client(api_key=api_key)
 
 response = client.models.generate_content(
@@ -26,8 +32,13 @@ response = client.models.generate_content(
 print(response.text)
 
 usage = response.usage_metadata
-print(f"Prompt tokens: {usage.prompt_token_count}")
-print(f"Response tokens: {usage.candidates_token_count}")
+prompt_tokens = usage.prompt_token_count
+response_tokens = usage.candidates_token_count
+
+if verbose:
+    print(f"User prompt: {user_prompt}")
+    print(f"Prompt tokens: {prompt_tokens}")
+    print(f"Response tokens: {response_tokens}")
 
 def main():
     print("Hello from ai-agent!")
