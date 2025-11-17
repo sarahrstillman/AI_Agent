@@ -1,47 +1,26 @@
-import os
 import sys
-from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+from pkg.calculator import Calculator
+from pkg.render import format_json_output
 
-if len(sys.argv) < 2:
-    print("Error: You must provide a prompt as a command line argument.")
-    print('Example: uv run main.py "Why are episodes 7-9 so much worse than 1-6?"')
-    sys.exit(1)
-
-user_prompt = sys.argv[1]
-
-verbose = False 
-if "--verbose" in sys.argv:
-    verbose = True
-
-messages = [
-    types.Content(role="user", parts=[types.Part(text=user_prompt)])
-]
-
-load_dotenv()
-
-api_key = os.environ.get("GEMINI_API_KEY")
-
-client = genai.Client(api_key=api_key)
-
-response = client.models.generate_content(
-    model="gemini-2.0-flash-001",
-    contents=messages)
-
-print(response.text)
-
-usage = response.usage_metadata
-prompt_tokens = usage.prompt_token_count
-response_tokens = usage.candidates_token_count
-
-if verbose:
-    print(f"User prompt: {user_prompt}")
-    print(f"Prompt tokens: {prompt_tokens}")
-    print(f"Response tokens: {response_tokens}")
 
 def main():
-    print("Hello from ai-agent!")
+    calculator = Calculator()
+    if len(sys.argv) <= 1:
+        print("Calculator App")
+        print('Usage: python main.py "<expression>"')
+        print('Example: python main.py "3 + 5"')
+        return
+
+    expression = " ".join(sys.argv[1:])
+    try:
+        result = calculator.evaluate(expression)
+        if result is not None:
+            to_print = format_json_output(expression, result)
+            print(to_print)
+        else:
+            print("Error: Expression is empty or contains only whitespace.")
+    except Exception as e:
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
